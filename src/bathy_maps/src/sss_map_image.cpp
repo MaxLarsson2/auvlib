@@ -17,7 +17,7 @@
 using namespace std;
 using namespace xtf_data;
 
-sss_map_image_builder::sss_map_image_builder(const sss_map_image::BoundsT& bounds, double resolution, int nbr_pings) : 
+sss_map_image_builder::sss_map_image_builder(const sss_map_image::BoundsT& bounds, double resolution, int nbr_pings) :
     bounds(bounds), resolution(resolution), waterfall_width(2*nbr_pings), waterfall_counter(0)
 {
     global_origin = Eigen::Vector3d(bounds(0, 0), bounds(0, 1), 0.);
@@ -86,17 +86,11 @@ sss_map_image sss_map_image_builder::finish()
     }
     map_image.sss_ping_duration = sss_ping_duration;
     map_image.pos = poss;
-    if (waterfall_width == 512) {
-        map_image.sss_waterfall_image = sss_waterfall_image.topRows(waterfall_counter).cast<float>();
-        map_image.sss_waterfall_depth = sss_waterfall_depth.topRows(waterfall_counter).cast<float>();
-        map_image.sss_waterfall_model = sss_waterfall_model.topRows(waterfall_counter).cast<float>();
-    }
-    else {
-        map_image.sss_waterfall_image = downsample_cols(sss_waterfall_image.topRows(waterfall_counter), 512).cast<float>();
-        //map_image.sss_waterfall_cross_track = sss_waterfall_cross_track.topRows(waterfall_counter);
-        map_image.sss_waterfall_depth = downsample_cols(sss_waterfall_depth.topRows(waterfall_counter), 512).cast<float>();
-        map_image.sss_waterfall_model = downsample_cols(sss_waterfall_model.topRows(waterfall_counter), 512).cast<float>();
-    }
+
+    map_image.sss_waterfall_image = sss_waterfall_image.topRows(waterfall_counter).cast<float>();
+    map_image.sss_waterfall_depth = sss_waterfall_depth.topRows(waterfall_counter).cast<float>();
+    map_image.sss_waterfall_model = sss_waterfall_model.topRows(waterfall_counter).cast<float>();
+
 
     return map_image;
 }
@@ -232,35 +226,22 @@ void sss_map_image_builder::add_hits(const Eigen::MatrixXd& hits, const Eigen::V
 
     std::cout << __FILE__ << ", " << __LINE__ << std::endl;
 
-    if (waterfall_width == 512) {
-        double ping_step = double(ping.pings.size()) / double(waterfall_width/2);
-        Eigen::ArrayXd value_windows = Eigen::VectorXd::Zero(waterfall_width/2);
-        Eigen::ArrayXd value_counts = Eigen::ArrayXd::Zero(waterfall_width/2);
-        for (int i = 0; i < ping.pings.size(); ++i) {
-            int col = int(double(i)/ping_step);
-            value_windows(col) += double(ping.pings[i])/10000.;
-            value_counts(col) += 1.;
-        }
-        value_counts += (value_counts == 0).cast<double>();
-        if (is_left) {
-            sss_waterfall_image.block(waterfall_counter, waterfall_width/2, 1, waterfall_width/2) = (value_windows / value_counts).transpose();
-        }
-        else {
-            sss_waterfall_image.block(waterfall_counter, 0, 1, waterfall_width/2) = (value_windows / value_counts).reverse().transpose();
-        }
+    double ping_step = double(ping.pings.size()) / double(waterfall_width/2);
+    Eigen::ArrayXd value_windows = Eigen::VectorXd::Zero(waterfall_width/2);
+    Eigen::ArrayXd value_counts = Eigen::ArrayXd::Zero(waterfall_width/2);
+    for (int i = 0; i < ping.pings.size(); ++i) {
+        int col = int(double(i)/ping_step);
+        value_windows(col) += double(ping.pings[i])/10000.;
+        value_counts(col) += 1.;
+    }
+    value_counts += (value_counts == 0).cast<double>();
+    if (is_left) {
+        sss_waterfall_image.block(waterfall_counter, waterfall_width/2, 1, waterfall_width/2) = (value_windows / value_counts).transpose();
     }
     else {
-        for (int i = 0; i < ping.pings.size(); ++i) {
-            int col;
-            if (is_left) {
-                col = waterfall_width/2 + i;
-            }
-            else {
-                col = waterfall_width/2 - 1 - i;
-            }
-            sss_waterfall_image(waterfall_counter, col) = double(ping.pings[i])/10000.;
-        }
+        sss_waterfall_image.block(waterfall_counter, 0, 1, waterfall_width/2) = (value_windows / value_counts).reverse().transpose();
     }
+
     std::cout << __FILE__ << ", " << __LINE__ << std::endl;
 
     if (is_left) {
@@ -404,7 +385,7 @@ sss_patch_views::ViewsT get_oriented_patches(const cv::Mat& image, const sss_map
 
             bool ris_inside = (rbrect & cv::Rect(0, 0, image.cols, image.rows)) == rbrect;
             bool lis_inside = (lbrect & cv::Rect(0, 0, image.cols, image.rows)) == lbrect;
-            
+
             cv::Size2f cv_image_size = cv::Size2f(image_size, image_size);
             if (!ris_inside || !lis_inside) {
                 //cv_patches.back().push_back(cv::Mat::zeros(cv_image_size, CV_8UC3));
