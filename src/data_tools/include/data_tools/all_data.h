@@ -14,7 +14,7 @@
 
 #include <data_tools/navi_data.h>
 #include <data_tools/csv_data.h>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #define BOOST_NO_CXX11_SCOPED_ENUMS
 #include <boost/filesystem.hpp>
 #undef BOOST_NO_CXX11_SCOPED_ENUMS
@@ -152,23 +152,51 @@ std_data::mbes_ping::PingsT match_attitude(std_data::mbes_ping::PingsT& pings, a
 csv_data::csv_asvp_sound_speed::EntriesT convert_sound_speeds(const all_mbes_ping::PingsT& pings);
 std_data::attitude_entry::EntriesT convert_attitudes(const all_nav_attitude::EntriesT& attitudes);
 
+class StreamParser {
+private:
+
+    std::function<void(all_mbes_ping)> mbes_callback;
+    std::function<void(all_nav_entry)> nav_entry_callback;
+
+public:
+
+    StreamParser() {}
+
+    bool parse_packet(const std::string& packet_load);
+
+    void set_mbes_callback(const std::function<void(all_mbes_ping)>& callback)
+    {
+        mbes_callback = callback;
+    }
+
+    void set_nav_entry_callback(const std::function<void(all_nav_entry)>& callback)
+    {
+        nav_entry_callback = callback;
+    }
+
+};
+
 } // namespace all_data
 
 namespace std_data {
 
 //template <typename ReturnType>
 //std::vector<ReturnType, Eigen::aligned_allocator<ReturnType> > parse_file(const boost::filesystem::path& path);
-template <>
-all_data::all_mbes_ping::PingsT parse_file(const boost::filesystem::path& path);
 
 template <>
-all_data::all_nav_entry::EntriesT parse_file(const boost::filesystem::path& path);
+all_data::all_mbes_ping::PingsT parse_file(const boost::filesystem::path& file);
 
 template <>
-all_data::all_nav_depth::EntriesT parse_file(const boost::filesystem::path& path);
+all_data::all_nav_entry::EntriesT parse_file(const boost::filesystem::path& file);
 
 template <>
-all_data::all_nav_attitude::EntriesT parse_file(const boost::filesystem::path& path);
+all_data::all_nav_depth::EntriesT parse_file(const boost::filesystem::path& file);
+
+template <>
+all_data::all_nav_attitude::EntriesT parse_file(const boost::filesystem::path& file);
+
+template <>
+all_data::all_echosounder_depth::EntriesT parse_file(const boost::filesystem::path& file);
 
 }
 

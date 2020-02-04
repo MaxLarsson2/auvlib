@@ -12,13 +12,13 @@
 #ifndef SSS_MAP_IMAGE_H
 #define SSS_MAP_IMAGE_H
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <eigen_cereal/eigen_cereal.h>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 
 #include <bathy_maps/patch_views.h>
-#include <data_tools/xtf_data.h>
+#include <data_tools/std_data.h>
 
 struct sss_map_image {
 
@@ -27,7 +27,7 @@ struct sss_map_image {
 
     BoundsT bounds;
 
-    Eigen::MatrixXd sss_map_image;
+    Eigen::MatrixXd sss_map_image_;
 
     double sss_ping_duration; // max time in waterfall image
     Eigen::MatrixXf sss_waterfall_image;
@@ -40,7 +40,7 @@ struct sss_map_image {
 	template <class Archive>
     void serialize( Archive & ar )
     {
-        ar(CEREAL_NVP(bounds), CEREAL_NVP(sss_map_image), CEREAL_NVP(sss_ping_duration),
+        ar(CEREAL_NVP(bounds), CEREAL_NVP(sss_map_image_), CEREAL_NVP(sss_ping_duration),
            CEREAL_NVP(sss_waterfall_image), CEREAL_NVP(sss_waterfall_cross_track),
            CEREAL_NVP(sss_waterfall_depth), CEREAL_NVP(sss_waterfall_model), CEREAL_NVP(pos));
     }
@@ -91,15 +91,15 @@ public:
     sss_map_image finish();
 
     void add_waterfall_images(const Eigen::MatrixXd& hits, const Eigen::VectorXi& hits_inds,
-                              const xtf_data::xtf_sss_ping_side& ping, const Eigen::Vector3d& pos, bool is_left);
+                              const std_data::sss_ping_side& ping, const Eigen::Vector3d& pos, bool is_left);
 
     void add_hits(const Eigen::MatrixXd& hits, const Eigen::VectorXi& hits_inds,
-                  const xtf_data::xtf_sss_ping_side& ping, const Eigen::Vector3d& pos, bool is_left);
+                  const std_data::sss_ping_side& ping, const Eigen::Vector3d& pos, bool is_left);
 
     void add_hits(const Eigen::MatrixXd& hits, const Eigen::VectorXi& hits_inds,
                   const Eigen::VectorXd& intensities,
                   const Eigen::VectorXd& sss_depths, const Eigen::VectorXd& sss_model,
-                  const xtf_data::xtf_sss_ping_side& ping, const Eigen::Vector3d& pos,
+                  const std_data::sss_ping_side& ping, const Eigen::Vector3d& pos,
                   const Eigen::Vector3d& rpy, bool is_left);
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

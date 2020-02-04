@@ -12,12 +12,12 @@
 #ifndef MAP_DRAPER_H
 #define MAP_DRAPER_H
 
-#include <bathy_maps/base_draper.h>
+#include <bathy_maps/view_draper.h>
 #include <bathy_maps/patch_views.h>
 #include <bathy_maps/sss_map_image.h>
 
 template <typename MapSaver>
-struct MapDraper : public BaseDraper {
+struct MapDraper : public ViewDraper {
 public:
 
     using BoundsT = Eigen::Matrix2d;
@@ -31,6 +31,7 @@ protected:
     //sss_map_image_builder map_image_builder;
     MapSaver map_image_builder;
     bool store_map_images;
+    bool close_when_done;
 
 public:
     
@@ -39,9 +40,10 @@ public:
     void set_image_callback(const std::function<void(MapType)>& callback) { save_callback = callback; }
     void set_resolution(double new_resolution);
     void set_store_map_images(bool store) { store_map_images = store; }
+    void set_close_when_done(bool close) { close_when_done = close; }
 
     MapDraper(const Eigen::MatrixXd& V1, const Eigen::MatrixXi& F1,
-              const xtf_data::xtf_sss_ping::PingsT& pings,
+              const std_data::sss_ping::PingsT& pings,
               const BoundsT& bounds,
               const csv_data::csv_asvp_sound_speed::EntriesT& sound_speeds);
 
@@ -50,7 +52,7 @@ public:
 };
 
 sss_map_image::ImagesT drape_maps(const Eigen::MatrixXd& V, const Eigen::MatrixXi& F,
-                                  const BaseDraper::BoundsT& bounds, const xtf_data::xtf_sss_ping::PingsT& pings,
+                                  const BaseDraper::BoundsT& bounds, const std_data::sss_ping::PingsT& pings,
                                   const csv_data::csv_asvp_sound_speed::EntriesT& sound_speeds, double sensor_yaw,
                                   double resolution, const std::function<void(sss_map_image)>& save_callback);
 
