@@ -31,7 +31,7 @@ BaseDraper::BaseDraper(const Eigen::MatrixXd& V1, const Eigen::MatrixXi& F1,
     offset = Eigen::Vector3d(bounds(0, 0), bounds(0, 1), 0.);
     sensor_offset_port = Eigen::Vector3d::Zero();
     sensor_offset_stbd = Eigen::Vector3d::Zero();
-    igl::per_face_normals(V1, F1, N1); // compute normals for mesh 
+    igl::per_face_normals(V1, F1, N1); // compute normals for mesh
 }
 
 void BaseDraper::set_ray_tracing_enabled(bool enabled)
@@ -107,7 +107,7 @@ tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> BaseDr
 
     Eigen::MatrixXd dirs_left;
     Eigen::MatrixXd dirs_right;
-    tie(dirs_left, dirs_right) = compute_sss_dirs(R, tilt_angle, beam_width, 500);
+    tie(dirs_left, dirs_right) = compute_sss_dirs(R, tilt_angle, beam_width, 10000);
 
     tie(hits_left, normals_left) = trace_side(ping.port, origin_port, dirs_left);
     tie(hits_right, normals_right) = trace_side(ping.stbd, origin_stbd, dirs_right);
@@ -125,12 +125,12 @@ tuple<Eigen::MatrixXd, Eigen::MatrixXd> BaseDraper::trace_side(const std_data::s
     Eigen::MatrixXd normals;
 
     auto start = chrono::high_resolution_clock::now();
-    
+
     tie(hits, hits_inds) = tracer.compute_hits(sensor_origin, dirs, V1, F1);
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
     if (DEBUG_OUTPUT) cout << "embree_compute_hits full time: " << duration.count() << " microseconds" << endl;
-    
+
     normals.resize(hits.rows(), 3);
     for (int j = 0; j < hits.rows(); ++j) {
         normals.row(j) = N1.row(hits_inds(j));
@@ -266,7 +266,7 @@ Eigen::MatrixXd BaseDraper::convert_to_time_bins(const Eigen::VectorXd& times, c
     return value_windows;
 }
 
-Eigen::VectorXd BaseDraper::compute_intensities(const Eigen::VectorXd& times, 
+Eigen::VectorXd BaseDraper::compute_intensities(const Eigen::VectorXd& times,
                                                 const std_data::sss_ping_side& ping)
 {
     double ping_step = ping.time_duration / double(ping.pings.size());
@@ -308,7 +308,7 @@ Eigen::VectorXd BaseDraper::compute_lambert_intensities(const Eigen::MatrixXd& h
 {
     Eigen::VectorXd intensities(hits.rows());
 
-    for (int j = 0; j < hits.rows(); ++j) { 
+    for (int j = 0; j < hits.rows(); ++j) {
         Eigen::Vector3d dir = origin - hits.row(j).transpose();
         double dist = dir.norm();
         dir.normalize();
@@ -331,7 +331,7 @@ Eigen::VectorXd BaseDraper::compute_model_intensities(const Eigen::VectorXd& dis
 
     std::normal_distribution<double> noise_dist(1., sigma_theta);
 
-    for (int j = 0; j < dists.rows(); ++j) { 
+    for (int j = 0; j < dists.rows(); ++j) {
         double dist = dists(j);
         double theta = thetas(j);
         double TL = 20.*log10(dist); //1./(dist*dist);
@@ -356,7 +356,7 @@ Eigen::VectorXd BaseDraper::compute_model_intensities(const Eigen::MatrixXd& hit
     Eigen::VectorXd thetas(hits.rows());
     Eigen::VectorXd dists(hits.rows());
 
-    for (int j = 0; j < hits.rows(); ++j) { 
+    for (int j = 0; j < hits.rows(); ++j) {
         Eigen::Vector3d dir = origin - hits.row(j).transpose();
         double dist = dir.norm();
         dir.normalize();

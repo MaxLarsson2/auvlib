@@ -18,7 +18,7 @@
 using namespace std;
 using namespace csv_data;
 
-int nbr_pings = 360;
+int nbr_pings = 512;
 
 template <typename MapSaver>
 MapDraper<MapSaver>::MapDraper(const Eigen::MatrixXd& V1, const Eigen::MatrixXi& F1,
@@ -95,7 +95,7 @@ bool MapDraper<MapSaver>::callback_pre_draw(igl::opengl::glfw::Viewer& viewer)
         map_image_builder.add_hits(right.hits_points, right.hits_inds, right.hits_intensities, right.time_bin_points.col(2),
                                    right.time_bin_model_intensities, pings[i].stbd, pos, rpy, false);
     }
-    
+
     // add intensities for visualization
     add_texture_intensities(left.hits_points, left.hits_intensities);
     add_texture_intensities(right.hits_points, right.hits_intensities);

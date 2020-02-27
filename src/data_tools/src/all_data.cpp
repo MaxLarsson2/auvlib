@@ -86,7 +86,7 @@ cv::Mat make_waterfall_image(const vector<vector<all_xyz88_datagram_repeat> >& p
     }
     //cv::Mat resized_swath_img;//dst image
     //cv::resize(swath_img, resized_swath_img, cv::Size(rows/8, cols/8));//resize image
-    
+
     return swath_img; // resized_swath_img;
 }
 
@@ -204,7 +204,7 @@ vector<ReturnType, Eigen::aligned_allocator<ReturnType> > parse_file_impl(const 
         exit(0);
     }
     //cout << "Opened " << path << " for reading..." << endl;
-    
+
     return parse_stream_impl<ReturnType, AllHeaderType, Code>(input);
 }
 
@@ -304,10 +304,10 @@ all_nav_depth read_datagram<all_nav_depth, all_depth_datagram>(std::istream& inp
 	all_nav_depth entry;
 	entry.id_ = header.height_count;
     tie(entry.time_stamp_, entry.time_string_) = parse_all_time(header.date, header.time);
-    
+
     entry.height = 100.*double(header.height); // Height in cm
     entry.height_type = header.height_type; // Height type
-	
+
     return entry;
 }
 
@@ -331,10 +331,10 @@ all_nav_attitude read_datagram<all_nav_attitude, all_attitude_datagram>(std::ist
         sample.heave = 0.01*double(meas.heave);
         entry.samples.push_back(sample);
 	}
-    
+
 	unsigned char system_desc; // Sensor system descriptor 1U
 	input.read(reinterpret_cast<char*>(&system_desc), sizeof(system_desc));
-	
+
     return entry;
 }
 
@@ -344,9 +344,9 @@ all_echosounder_depth read_datagram<all_echosounder_depth, all_echosounder_depth
 	all_echosounder_depth entry;
 	entry.id_ = header.echo_count;
     tie(entry.time_stamp_, entry.time_string_) = parse_all_time(header.date, header.time);
-    
+
     entry.depth_ = 100.*double(header.echo_depth); // Height in cm
-	
+
     return entry;
 }
 
@@ -491,7 +491,7 @@ mbes_ping::PingsT match_attitude(mbes_ping::PingsT& pings, all_nav_attitude::Ent
         Eigen::Matrix3d Ry = Eigen::AngleAxisd(1.*ping.pitch_, Eigen::Vector3d::UnitY()).matrix();
         Eigen::Matrix3d Rx = Eigen::AngleAxisd(1.*ping.roll_, Eigen::Vector3d::UnitX()).matrix();
         Eigen::Matrix3d R = Rz*Ry;
-        
+
         for (Eigen::Vector3d& beam : ping.beams) {
             //beam = beam - ping.pos_;
             //Rz = Eigen::AngleAxisd(-ping.heading_, Eigen::Vector3d::UnitZ()).matrix();
